@@ -20,14 +20,15 @@ Tested (uses CPU + disk offload):
 - An NVMe SSD[^4]
 
 Recommended (uses CPU offload, but no disk offload)[^5]:
-- A GPU with 32GB of VRAM
+- Windows[^1]
+- An Nvidia GPU with >32GB of VRAM[^1]
 - 192GB of system memory
 - A PCIe 5.0 x16 connection between GPU and CPU
 
 Ultra (does not use offload)[^5]:
 - Enough VRAM to run entirely on GPU (possibly 192GB of VRAM)
 
-[^1]: Windows + Nvidia is required when using a GPU with low VRAM, because this combination allows for the driver to fallback to using system memory if graphics memory is full. Otherwise some operations will cause the program to crash with OOM.
+[^1]: Windows + Nvidia is required when using a GPU with low VRAM, because this combination allows for the driver to fallback to using system memory if graphics memory is full. Otherwise some operations will cause the program to crash with OOM. Graphics memory usage appears to spike above 32GB of VRAM, so system memory fallback is probably still necessary with an RTX 5090.
 [^2]: The less memory you have, the more weights will have to be offloaded to disk, with a dramatic performance penalty.
 [^3]: When using CPU offload, a major performance bottleneck is in copying weights across the PCIe bus to GPU.
 [^4]: When using disk offload, a major bottleneck is in reading from drive, so you want it to be as fast as possible.
@@ -52,7 +53,7 @@ Ultra (does not use offload)[^5]:
 
 The node has the following inputs:
 
-- text_prompt - Your text prompt
+- prompt - Your text prompt
 
 The node has the following parameters:
 
@@ -69,7 +70,8 @@ The node has the following parameters:
 - use_offload - Whether to use CPU / disk offload.
 - disk_offload_layers - The number of layers (out of 32) to offload to disk, rather than hold in memory. See the [Performance Tuning](#performance-tuning) section for more details.
 
-An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
+Basic usage: Connect a String (Multiline) input to the `prompt` input, and connect the `Image` output to a Save Image node. An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
+![example workflow](assets/workflow_screenshot.png)
 
 ## Performance Tuning
 

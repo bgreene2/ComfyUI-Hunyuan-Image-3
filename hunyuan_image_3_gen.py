@@ -1,3 +1,5 @@
+import numpy as np
+import torch
 from transformers import AutoModelForCausalLM
 
 class HunyuanImage3:
@@ -12,8 +14,8 @@ class HunyuanImage3:
                 "use_dimensions": ("BOOLEAN", {"default": False, "tooltip": "If false, the model will choose the image dimensions, and the user-provided width and height will be ignored."}),
                 "width": ("INT", {"default": 1024, "min": 0, "max": 4096}),
                 "height": ("INT", {"default": 1024, "min": 0, "max": 4096}),
-                "steps": ("INT", {"default": 50, "min": 0, "max": 200, "tooltip": "The default is 50 for this model."}),
-                "guidance_scale": ("FLOAT", {"default": 7.5, "min": 1.0, "max": 20.0, "tooltip": "The default is 7.5 for this model."}),
+                "steps": ("INT", {"default": 0, "min": 0, "max": 200, "tooltip": "If 0, it will use the model's default of 50."}),
+                "guidance_scale": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 100.0, "tooltip": "If 0, it will use the model's default of 7.5."}),
                 "attn_implementation": ("STRING", {"multiline": False, "default": "sdpa", "tooltip": "Use sdpa. If FlashAttention is installed, you may try flash_attention_2."}),
                 "moe_impl": ("STRING", {"multiline": False, "default": "eager", "tooltip": "Use eager. If FlashInfer is installed, you may try flashinfer."}),
                 "weights_folder": ("STRING", {"multiline": False, "default": "./HunyuanImage-3", "tooltip": "The path to the Hunyuan Image 3.0 weights on disk. Note: the path cannot have a \".\"."}),
@@ -68,10 +70,22 @@ class HunyuanImage3:
         model = AutoModelForCausalLM.from_pretrained(model_id, **model_kwargs)
         model.load_tokenizer(model_id)
 
-        image_kwargs = {}
+        # Generate image
+        image_kwargs = {'seed': seed}
+        if steps > 0:
+            image_kwargs['diff_infer_steps'] = steps
+        if guidance_scale > 0.0:
+            image_kwargs['diff_guidance_scale'] = guidance_scale
         if use_dimensions:
             image_kwargs["image_size"] = f"{width}x{height}"
         image = model.generate_image(prompt=prompt, stream=True, **image_kwargs)
+
+        # Convert image from PIL format
+        if image.mode == 'I':
+            image = image.point(lambda i: i * (1 / 255))
+        image = image.convert("RGB")
+        image = np.array(image).astype(np.float32) / 255.0
+        image = torch.from_numpy(image)[None,]
 
         return (image,)
 
