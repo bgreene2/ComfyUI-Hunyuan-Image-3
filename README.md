@@ -12,26 +12,26 @@ This is a custom node that allows for basic image generation using Hunyuan Image
 
 ## System Requirements
 
-Minimum (uses CPU + disk offload):
+Tested (uses CPU + disk offload):
 - Windows[^1]
 - An Nvidia GPU with 24GB of VRAM[^1]
 - 128 GB of system memory[^2]
 - A PCIe 4.0 x16 connection between GPU and CPU[^3]
 - An NVMe SSD[^4]
 
-Recommended (uses CPU offload, but no disk offload)[^untested]:
+Recommended (uses CPU offload, but no disk offload)[^5]:
 - A GPU with 32GB of VRAM
 - 192GB of system memory
 - A PCIe 5.0 x16 connection between GPU and CPU
 
-Ultra (does not use offload)[^untested]:
+Ultra (does not use offload)[^5]:
 - Enough VRAM to run entirely on GPU (possibly 192GB of VRAM)
 
 [^1]: Windows + Nvidia is required when using a GPU with low VRAM, because this combination allows for the driver to fallback to using system memory if graphics memory is full. Otherwise some operations will cause the program to crash with OOM.
 [^2]: The less memory you have, the more weights will have to be offloaded to disk, with a dramatic performance penalty.
 [^3]: When using CPU offload, a major performance bottleneck is in copying weights across the PCIe bus to GPU.
 [^4]: When using disk offload, a major bottleneck is in reading from drive, so you want it to be as fast as possible.
-[^untested]: This configuration has not been tested.
+[^5]: This configuration has not been tested.
 
 ## Installation
 
@@ -39,8 +39,8 @@ Ultra (does not use offload)[^untested]:
 2. Clone this repo: `git clone https://github.com/bgreene2/ComfyUI-HunyuanImage3.git`
 3. Change to the directory `cd ComfyUI-HunyuanImage3`
 4. Assuming the correct Python environemnt is loaded, install dependencies `pip install -r requirements.txt`
-5. Install pytorch: `pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128`
-6. Restart ComfyUI
+5. If pytorch is not already installed, install pytorch: `pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128`
+6. Add the flag `--disable-cuda-malloc` to your ComfyUI startup script.
 
 ## Post-installation steps
 
@@ -80,4 +80,13 @@ With an RTX 4090, 128GB DDR4, PCIe 4.0, an image will take on the order of 1-1.5
 ## Recommended Usage
 
 This model works best with detailed prompts. See the [HuggingFace page](https://huggingface.co/tencent/HunyuanImage-3.0) for a prompting guide. You can also use an LLM to rewrite your prompts, such as [PromptEnhancer](https://huggingface.co/PromptEnhancer/PromptEnhancer-32B).
+
+## Troubleshooting
+
+If you are getting crashes due to running out of GPU memory, make sure you are doing the following:
+
+1. Use Windows
+2. Use an Nvidia GPU
+3. Set Sysmem Fallback Policy in the Nvidia control panel
+4. Run ComfyUI with `--disable-cuda-malloc`
 
