@@ -20,8 +20,8 @@ Tested (uses CPU + disk offload):
 - An NVMe SSD[^4]
 
 Recommended (uses CPU offload, but no disk offload)[^5]:
-- Windows[^1]
-- An Nvidia GPU with >32GB of VRAM[^1]
+- Windows
+- An Nvidia GPU with >32GB of VRAM
 - 192GB of system memory
 - A PCIe 5.0 x16 connection between GPU and CPU
 
