@@ -1,7 +1,7 @@
 [project]
 name = "ComfyUI-Hunyuan-Image-3"
 description = "A ComfyUI custom node that provides a basic implementation of Hunyuan Image 3.0 using Transformers."
-version = "1.0.0"
+version = "1.0.1"
 license = {file = "LICENSE"} 
 classifiers = [
     # For OS-independent nodes (works on all operating systems)
