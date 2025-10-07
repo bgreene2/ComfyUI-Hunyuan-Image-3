@@ -1,4 +1,4 @@
-# ComfyUI LLM Chat Completion Node
+# ComfyUI Hunyuan Image 3.0 custom node
 
 This is a custom node that allows for basic image generation using Hunyuan Image 3.0.
 
