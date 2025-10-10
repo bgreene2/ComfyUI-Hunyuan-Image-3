@@ -69,6 +69,7 @@ The node has the following parameters:
 - weights_folder - The path to the model's weights on disk. Note: the path can't have a dot in it.
 - use_offload - Whether to use CPU / disk offload.
 - disk_offload_layers - The number of layers (out of 32) to offload to disk, rather than hold in memory. See the [Performance Tuning](#performance-tuning) section for more details.
+- device_map_overrides - You can modify the custom device_map using this. Overrides are expressed as key=value pairs, comma-separated. For example, to put layers 1 and 2 on GPU 1, you would do `model.layers.1=1,model.layers.2=1`.
 
 Basic usage: Connect a String (Multiline) input to the `prompt` input, and connect the `Image` output to a Save Image node. An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
 ![example workflow](assets/workflow_screenshot.png)
@@ -77,7 +78,7 @@ Basic usage: Connect a String (Multiline) input to the `prompt` input, and conne
 
 If you are using disk offload, you need to choose the number of layers to offload such that your RAM is not completely filled, so that the system does not use swap. This may require some trial-and-error while monitoring memory usage. On a system with 128GB of memory, 10 layers is a good starting point.
 
-With an RTX 4090, 128GB DDR4, PCIe 4.0, an image will take on the order of 1-1.5 hours to generate.
+On the tested system, an image takes on the order of 1-1.5 hours to generate, using 50 steps.
 
 ## Recommended Usage
 
