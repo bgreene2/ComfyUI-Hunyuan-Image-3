@@ -52,9 +52,8 @@ class HunyuanImage3:
         """Generate an image"""
         model_id = weights_folder
 
-        use_custom_device_map = use_offload or device_map_overrides != None or !device_map_overrides.is_empty?
-
-        if use_custom_device_map:
+        # Use custom device map, or auto
+        if use_offload or device_map_overrides:
             device_map = {'vae': 0, 'vision_model': 'cpu', 'vision_aligner': 'cpu', 'timestep_emb': 'cpu', 'patch_embed': 'cpu', 'time_embed': 'cpu', 'final_layer': 'cpu', 'time_embed_2': 'cpu', 'model.wte': 'cpu', 'model.layers.0': 'cpu', 'model.layers.1': 'cpu', 'model.layers.2': 'cpu', 'model.layers.3': 'cpu', 'model.layers.4': 'cpu', 'model.layers.5': 'cpu', 'model.layers.6': 'cpu', 'model.layers.7': 'cpu', 'model.layers.8': 'cpu', 'model.layers.9': 'cpu', 'model.layers.10': 'cpu', 'model.layers.11': 'cpu', 'model.layers.12': 'cpu', 'model.layers.13': 'cpu', 'model.layers.14': 'cpu', 'model.layers.15': 'cpu', 'model.layers.16': 'cpu', 'model.layers.17': 'cpu', 'model.layers.18': 'cpu', 'model.layers.19': 'cpu', 'model.layers.20': 'cpu', 'model.layers.21': 'cpu', 'model.layers.22': 'cpu', 'model.layers.23': 'cpu', 'model.layers.24': 'cpu', 'model.layers.25': 'cpu', 'model.layers.26': 'cpu', 'model.layers.27': 'cpu', 'model.layers.28': 'cpu', 'model.layers.29': 'cpu', 'model.layers.30': 'cpu', 'model.layers.31': 'cpu', 'model.ln_f': 'cpu', 'lm_head': 'cpu'}
 
             if use_offload:
@@ -64,7 +63,7 @@ class HunyuanImage3:
                         layer_num = top_layer_num - i
                         device_map[f"model.layers.{layer_num}"] = "disk"
 
-            if device_map_overrides != None or !device_map_overrides.is_empty?:
+            if device_map_overrides:
                 overrides = device_map_overrides.strip().split(',')
                 for override in overrides:
                     split_override = override.strip().split('=')
@@ -82,6 +81,8 @@ class HunyuanImage3:
                     device_map[key] = value
         else:
             device_map = 'auto'
+
+        print(f"Using device map: {device_map}")
             
         model_kwargs = dict(
             attn_implementation=attn_implementation,
