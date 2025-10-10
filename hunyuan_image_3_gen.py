@@ -77,7 +77,7 @@ class HunyuanImage3:
         if guidance_scale > 0.0:
             image_kwargs['diff_guidance_scale'] = guidance_scale
         if use_dimensions:
-            image_kwargs["image_size"] = f"{width}x{height}"
+            image_kwargs["image_size"] = f"{height}x{width}"
         image = model.generate_image(prompt=prompt, stream=True, **image_kwargs)
 
         # Convert image from PIL format
