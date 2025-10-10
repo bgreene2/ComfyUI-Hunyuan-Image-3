@@ -66,7 +66,7 @@ The node has the following parameters:
 - guidance_scale - CFG. The recommended value is 7.5.
 - attn_implementation - Valid values are `sdpa` and `flash_attention_2`
 - moe_impl - Valid values are `eager` and `flashinfer`
-- weights_folder - The path to the model's weights on disk. Note: the path can't have a dot in it.
+- weights_folder - The path to the model's weights on disk.
 - use_offload - Whether to use CPU / disk offload.
 - disk_offload_layers - The number of layers (out of 32) to offload to disk, rather than hold in memory. See the [Performance Tuning](#performance-tuning) section for more details.
 - device_map_overrides - You can modify the custom device_map using this. Overrides are expressed as key=value pairs, comma-separated. For example, to put layers 1 and 2 on GPU 1, you would do `model.layers.1=1,model.layers.2=1`.
