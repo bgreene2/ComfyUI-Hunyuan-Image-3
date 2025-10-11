@@ -69,6 +69,7 @@ The node has the following parameters:
 - weights_folder - The path to the model's weights on disk. Note: the path can't have a dot in it.
 - use_offload - Whether to use CPU / disk offload.
 - disk_offload_layers - The number of layers (out of 32) to offload to disk, rather than hold in memory. See the [Performance Tuning](#performance-tuning) section for more details.
+- keep_model_in_memory - If enabled, the model will be kept in memory between generations.
 
 Basic usage: Connect a String (Multiline) input to the `prompt` input, and connect the `Image` output to a Save Image node. An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
 ![example workflow](assets/workflow_screenshot.png)
