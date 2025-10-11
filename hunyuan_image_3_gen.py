@@ -120,7 +120,7 @@ class HunyuanImage3:
             device_map = 'auto'
 
         self._log(f"Using device map: {device_map}")
-            
+
         model_kwargs = dict(
             attn_implementation=attn_implementation,
             trust_remote_code=True,
