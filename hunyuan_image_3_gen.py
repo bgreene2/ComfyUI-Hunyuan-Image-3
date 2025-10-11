@@ -5,6 +5,11 @@ from transformers import AutoModelForCausalLM
 class HunyuanImage3:
     """ComfyUI node for generating images with Hunyuan Image 3.0"""
     
+    # CHANGE: Add class variable to store the loaded model so it persists between method calls
+    # This prevents the model from being unloaded and reserved RAM from being released
+    model = None
+    model_loaded = False
+    
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -48,27 +53,37 @@ class HunyuanImage3:
         """Generate an image"""
         model_id = weights_folder
 
-        if use_offload:
-            device_map = {'vae': 0, 'vision_model': 'cpu', 'vision_aligner': 'cpu', 'timestep_emb': 'cpu', 'patch_embed': 'cpu', 'time_embed': 'cpu', 'final_layer': 'cpu', 'time_embed_2': 'cpu', 'model.wte': 'cpu', 'model.layers.0': 'cpu', 'model.layers.1': 'cpu', 'model.layers.2': 'cpu', 'model.layers.3': 'cpu', 'model.layers.4': 'cpu', 'model.layers.5': 'cpu', 'model.layers.6': 'cpu', 'model.layers.7': 'cpu', 'model.layers.8': 'cpu', 'model.layers.9': 'cpu', 'model.layers.10': 'cpu', 'model.layers.11': 'cpu', 'model.layers.12': 'cpu', 'model.layers.13': 'cpu', 'model.layers.14': 'cpu', 'model.layers.15': 'cpu', 'model.layers.16': 'cpu', 'model.layers.17': 'cpu', 'model.layers.18': 'cpu', 'model.layers.19': 'cpu', 'model.layers.20': 'cpu', 'model.layers.21': 'cpu', 'model.layers.22': 'cpu', 'model.layers.23': 'cpu', 'model.layers.24': 'cpu', 'model.layers.25': 'cpu', 'model.layers.26': 'cpu', 'model.layers.27': 'cpu', 'model.layers.28': 'cpu', 'model.layers.29': 'cpu', 'model.layers.30': 'cpu', 'model.layers.31': 'cpu', 'model.ln_f': 'cpu', 'lm_head': 'cpu'}
+        # CHANGE: Check if model is already loaded before attempting to load it
+        # This ensures we only load the model once and keep it in memory
+        if not self.model_loaded or self.model is None:
+            if use_offload:
+                device_map = {'vae': 0, 'vision_model': 'cpu', 'vision_aligner': 'cpu', 'timestep_emb': 'cpu', 'patch_embed': 'cpu', 'time_embed': 'cpu', 'final_layer': 'cpu', 'time_embed_2': 'cpu', 'model.wte': 'cpu', 'model.layers.0': 'cpu', 'model.layers.1': 'cpu', 'model.layers.2': 'cpu', 'model.layers.3': 'cpu', 'model.layers.4': 'cpu', 'model.layers.5': 'cpu', 'model.layers.6': 'cpu', 'model.layers.7': 'cpu', 'model.layers.8': 'cpu', 'model.layers.9': 'cpu', 'model.layers.10': 'cpu', 'model.layers.11': 'cpu', 'model.layers.12': 'cpu', 'model.layers.13': 'cpu', 'model.layers.14': 'cpu', 'model.layers.15': 'cpu', 'model.layers.16': 'cpu', 'model.layers.17': 'cpu', 'model.layers.18': 'cpu', 'model.layers.19': 'cpu', 'model.layers.20': 'cpu', 'model.layers.21': 'cpu', 'model.layers.22': 'cpu', 'model.layers.23': 'cpu', 'model.layers.24': 'cpu', 'model.layers.25': 'cpu', 'model.layers.26': 'cpu', 'model.layers.27': 'cpu', 'model.layers.28': 'cpu', 'model.layers.29': 'cpu', 'model.layers.30': 'cpu', 'model.layers.31': 'cpu', 'model.ln_f': 'cpu', 'lm_head': 'cpu'}
 
-            top_layer_num = 31
-            if disk_offload_layers > 0:
-                for i in range(disk_offload_layers):
-                    layer_num = top_layer_num - i
-                    device_map[f"model.layers.{layer_num}"] = "disk"
+                top_layer_num = 31
+                if disk_offload_layers > 0:
+                    for i in range(disk_offload_layers):
+                        layer_num = top_layer_num - i
+                        device_map[f"model.layers.{layer_num}"] = "disk"
+            else:
+                device_map = 'auto'
+
+            model_kwargs = dict(
+                attn_implementation=attn_implementation,
+                trust_remote_code=True,
+                device_map=device_map,
+                torch_dtype="auto",
+                moe_impl=moe_impl,
+            )
+
+            # CHANGE: Store the model as a class variable instead of a local variable
+            # This ensures the model persists after the method returns
+            self.model = AutoModelForCausalLM.from_pretrained(model_id, **model_kwargs)
+            self.model.load_tokenizer(model_id)
+            self.model_loaded = True
         else:
-            device_map = 'auto'
-
-        model_kwargs = dict(
-            attn_implementation=attn_implementation,
-            trust_remote_code=True,
-            device_map=device_map,
-            torch_dtype="auto",
-            moe_impl=moe_impl,
-        )
-
-        model = AutoModelForCausalLM.from_pretrained(model_id, **model_kwargs)
-        model.load_tokenizer(model_id)
+            # CHANGE: Use the already loaded model if it exists
+            # This avoids reloading the model and keeps the reserved RAM
+            model = self.model
 
         # Generate image
         image_kwargs = {'seed': seed}
@@ -77,8 +92,10 @@ class HunyuanImage3:
         if guidance_scale > 0.0:
             image_kwargs['diff_guidance_scale'] = guidance_scale
         if use_dimensions:
-            image_kwargs["image_size"] = f"{height}x{width}"
-        image = model.generate_image(prompt=prompt, stream=True, **image_kwargs)
+            image_kwargs["image_size"] = f"{width}x{height}"
+        # CHANGE: Use self.model instead of local model variable
+        # This ensures we're using the persistent model instance
+        image = self.model.generate_image(prompt=prompt, stream=True, **image_kwargs)
 
         # Convert image from PIL format
         if image.mode == 'I':
@@ -87,5 +104,7 @@ class HunyuanImage3:
         image = np.array(image).astype(np.float32) / 255.0
         image = torch.from_numpy(image)[None,]
 
-        return (image,)
+        # CHANGE: No model cleanup or unloading code is added here
+        # This ensures the model remains loaded in memory after generation
 
+        return (image,)
