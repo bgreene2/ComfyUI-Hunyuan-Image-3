@@ -21,7 +21,7 @@ class HunyuanImage3:
                 "width": ("INT", {"default": 1024, "min": 0, "max": 4096}),
                 "height": ("INT", {"default": 1024, "min": 0, "max": 4096}),
                 "steps": ("INT", {"default": 0, "min": 0, "max": 200, "tooltip": "If 0, it will use the model's default of 50."}),
-                "guidance_scale": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 100.0, "tooltip": "If 0, it will use the model's default of 7.5."}),
+                "guidance_scale": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 100.0, "step": 0.1, "tooltip": "If 0, it will use the model's default of 7.5."}),
                 "attn_implementation": ("STRING", {"multiline": False, "default": "sdpa", "tooltip": "Use sdpa. If FlashAttention is installed, you may try flash_attention_2."}),
                 "moe_impl": ("STRING", {"multiline": False, "default": "eager", "tooltip": "Use eager. If FlashInfer is installed, you may try flashinfer."}),
                 "weights_folder": ("STRING", {"multiline": False, "default": "./HunyuanImage-3", "tooltip": "The path to the Hunyuan Image 3.0 weights on disk."}),
