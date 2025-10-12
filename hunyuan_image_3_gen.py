@@ -1,4 +1,5 @@
 import numpy as np
+import gc
 import torch
 from transformers import AutoModelForCausalLM
 
@@ -8,6 +9,7 @@ class HunyuanImage3:
     # Use class variable to store the loaded model so it persists between method calls
     # This prevents the model from being unloaded and reserved RAM from being released
     model = None
+    model_settings = None
     
     @classmethod
     def INPUT_TYPES(cls):
@@ -59,16 +61,26 @@ class HunyuanImage3:
         model_id = weights_folder
 
         # Load model
+        # If the model is already loaded, but the settings have changed, unload the model.
+        model_settings = self._model_settings_string(model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides)
+        if self.model is not None and self.model_settings != model_settings:
+            self.model = None
+            gc.collect()
+
+        # Save the current model settings
+        self.model_settings = model_settings
+
+        # If the model is already loaded, use it. Otherwise, load it.
+        if self.model is not None:
+            model = self.model
+        else:
+            model = self._load_model(model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides)
+
+        # If we are going to keep the model in memory, save it. Otherwise, make sure it's not saved.
         if keep_model_in_memory:
-            # If the model is already loaded, use it. Otherwise, load it.
-            if self.model is not None:
-                model = self.model
-            else:
-                model = self._load_model(model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides)
-                self.model = model
+            self.model = model
         else:
             self.model = None
-            model = self._load_model(model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides)
 
         # Generate image
         image_kwargs = {'seed': seed}
@@ -136,3 +148,7 @@ class HunyuanImage3:
 
     def _log(self, string):
         print(f"HunyuanImage3: {string}")
+
+    def _model_settings_string(self, model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides):
+        return f"{model_id}-{attn_implementation}-{moe_impl}-{use_offload}-{disk_offload_layers}-{device_map_overrides}"
+
