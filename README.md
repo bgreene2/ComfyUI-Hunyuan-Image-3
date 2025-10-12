@@ -59,7 +59,7 @@ The node has the following parameters:
 
 - seed - The seed for the random number generator
 - control after generate - This is attached to the 'seed' parameter
-- use_dimensions - Whether to use the below user-specified width and height values. If false, the model will automatically choose the image dimensions.
+- use_dimensions - Whether to use the below user-specified width and height values. If false, the model will automatically choose the image dimensions. Note: the model has a few discrete image sizes that it supports. So even if you specify a width and height, the actual image dimensions used may be different, but should have a similar ratio.
 - width - Image width
 - height - Image height
 - steps - Number of steps. The recommended value is 50.
