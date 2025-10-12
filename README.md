@@ -71,6 +71,7 @@ The node has the following parameters:
 - disk_offload_layers - The number of layers (out of 32) to offload to disk, rather than hold in memory. See the [Performance Tuning](#performance-tuning) section for more details.
 - keep_model_in_memory - If enabled, the model will be kept in memory between generations.
 - device_map_overrides - ADVANCED: You can modify the custom device_map using this. Overrides are expressed as key=value pairs, comma-separated. For example, to put layers 1 and 2 on GPU 1, you would do `model.layers.1=1,model.layers.2=1`.
+- moe_drop_tokens - ADVANCED: Enables the moe_drop_tokens parameter on model loading. See [this comment](https://github.com/Tencent-Hunyuan/HunyuanImage-3.0/issues/39#issuecomment-3384699854).
 
 Basic usage: Connect a String (Multiline) input to the `prompt` input, and connect the `Image` output to a Save Image node. An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
 ![example workflow](assets/workflow_screenshot.png)
