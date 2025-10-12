@@ -86,7 +86,7 @@ If you are getting crashes due to running out of GPU memory, there are some thin
 
 This stabilizes memory usage dramatically. It does alter the output image, but quality is not affected much. See [this comment](https://github.com/Tencent-Hunyuan/HunyuanImage-3.0/issues/39#issuecomment-3384699854).
 
-If you don't wish to do this, you could try the following:
+If you don't wish to do this, or if you are still running out of memory, you could try the following:
 
 1. Set Sysmem Fallback Policy in the Nvidia control panel (only available on Windows platforms - Nvidia's Linux drivers don't have this feature)
 2. Run ComfyUI with `--disable-cuda-malloc`
