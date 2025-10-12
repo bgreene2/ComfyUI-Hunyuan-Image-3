@@ -31,6 +31,7 @@ class HunyuanImage3:
             },
             "optional": {
                 "device_map_overrides": ("STRING", {"multiline": False, "tooltip": "ADVANCED: Device map key=value overrides, comma-separated. e.g. \"model.layers.0=0,model.layers.1=1\"."}),
+                "moe_drop_tokens": ("BOOLEAN", {"default": True, "tooltip": "Sets moe_drop_tokens=True on model loading."}),
             }
         }
     
@@ -56,13 +57,14 @@ class HunyuanImage3:
         disk_offload_layers: int,
         keep_model_in_memory: bool,
         device_map_overrides: str,
+        moe_drop_tokens: bool,
     ):
         """Generate an image"""
         model_id = weights_folder
 
         # Load model
         # If the model is already loaded, but the settings have changed, unload the model.
-        model_settings = self._model_settings_string(model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides)
+        model_settings = self._model_settings_string(model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides, moe_drop_tokens)
         if self.model is not None and self.model_settings != model_settings:
             self.model = None
             gc.collect()
@@ -74,7 +76,7 @@ class HunyuanImage3:
         if self.model is not None:
             model = self.model
         else:
-            model = self._load_model(model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides)
+            model = self._load_model(model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides, moe_drop_tokens)
 
         # If we are going to keep the model in memory, save it. Otherwise, make sure it's not saved.
         if keep_model_in_memory:
@@ -101,7 +103,7 @@ class HunyuanImage3:
 
         return (image,)
 
-    def _load_model(self, model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides):
+    def _load_model(self, model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides, moe_drop_tokens):
         if use_offload or device_map_overrides:
             device_map = {'vae': 0, 'vision_model': 'cpu', 'vision_aligner': 'cpu', 'timestep_emb': 'cpu', 'patch_embed': 'cpu', 'time_embed': 'cpu', 'final_layer': 'cpu', 'time_embed_2': 'cpu', 'model.wte': 'cpu', 'model.layers.0': 'cpu', 'model.layers.1': 'cpu', 'model.layers.2': 'cpu', 'model.layers.3': 'cpu', 'model.layers.4': 'cpu', 'model.layers.5': 'cpu', 'model.layers.6': 'cpu', 'model.layers.7': 'cpu', 'model.layers.8': 'cpu', 'model.layers.9': 'cpu', 'model.layers.10': 'cpu', 'model.layers.11': 'cpu', 'model.layers.12': 'cpu', 'model.layers.13': 'cpu', 'model.layers.14': 'cpu', 'model.layers.15': 'cpu', 'model.layers.16': 'cpu', 'model.layers.17': 'cpu', 'model.layers.18': 'cpu', 'model.layers.19': 'cpu', 'model.layers.20': 'cpu', 'model.layers.21': 'cpu', 'model.layers.22': 'cpu', 'model.layers.23': 'cpu', 'model.layers.24': 'cpu', 'model.layers.25': 'cpu', 'model.layers.26': 'cpu', 'model.layers.27': 'cpu', 'model.layers.28': 'cpu', 'model.layers.29': 'cpu', 'model.layers.30': 'cpu', 'model.layers.31': 'cpu', 'model.ln_f': 'cpu', 'lm_head': 'cpu'}
 
@@ -131,8 +133,6 @@ class HunyuanImage3:
         else:
             device_map = 'auto'
 
-        self._log(f"Using device map: {device_map}")
-
         model_kwargs = dict(
             attn_implementation=attn_implementation,
             trust_remote_code=True,
@@ -140,6 +140,11 @@ class HunyuanImage3:
             torch_dtype="auto",
             moe_impl=moe_impl,
         )
+
+        if moe_drop_tokens:
+            model_kwargs['moe_drop_tokens'] = True
+
+        self._log(f"Using model args: {model_kwargs}")
 
         model = AutoModelForCausalLM.from_pretrained(model_id, **model_kwargs)
         model.load_tokenizer(model_id)
@@ -149,6 +154,6 @@ class HunyuanImage3:
     def _log(self, string):
         print(f"HunyuanImage3: {string}")
 
-    def _model_settings_string(self, model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides):
-        return f"{model_id}-{attn_implementation}-{moe_impl}-{use_offload}-{disk_offload_layers}-{device_map_overrides}"
+    def _model_settings_string(self, model_id, attn_implementation, moe_impl, use_offload, disk_offload_layers, device_map_overrides, moe_drop_tokens):
+        return f"{model_id}-{attn_implementation}-{moe_impl}-{use_offload}-{disk_offload_layers}-{device_map_overrides}-{moe_drop_tokens}"
 
