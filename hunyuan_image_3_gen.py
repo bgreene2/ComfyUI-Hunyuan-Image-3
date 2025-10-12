@@ -31,7 +31,7 @@ class HunyuanImage3:
             },
             "optional": {
                 "device_map_overrides": ("STRING", {"multiline": False, "tooltip": "ADVANCED: Device map key=value overrides, comma-separated. e.g. \"model.layers.0=0,model.layers.1=1\"."}),
-                "moe_drop_tokens": ("BOOLEAN", {"default": False, "tooltip": "ADVANCED: sets moe_drop_tokens=True on model loading."}),
+                "moe_drop_tokens": ("BOOLEAN", {"default": True, "tooltip": "Sets moe_drop_tokens=True on model loading."}),
             }
         }
     
