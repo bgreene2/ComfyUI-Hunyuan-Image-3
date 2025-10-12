@@ -133,8 +133,6 @@ class HunyuanImage3:
         else:
             device_map = 'auto'
 
-        self._log(f"Using device map: {device_map}")
-
         model_kwargs = dict(
             attn_implementation=attn_implementation,
             trust_remote_code=True,
@@ -145,6 +143,8 @@ class HunyuanImage3:
 
         if moe_drop_tokens:
             model_kwargs['moe_drop_tokens'] = True
+
+        self._log(f"Using model args: {model_kwargs}")
 
         model = AutoModelForCausalLM.from_pretrained(model_id, **model_kwargs)
         model.load_tokenizer(model_id)
