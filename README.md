@@ -1,8 +1,6 @@
 # ComfyUI Hunyuan Image 3.0 custom node
 
-This is a custom node that allows for basic image generation using Hunyuan Image 3.0.
-
-![Node screenshot](assets/node_screenshot.png)
+This is a set of custom nodes that allow for basic image generation using Hunyuan Image 3.0.
 
 ## Features
 
@@ -29,9 +27,10 @@ Manual installation steps:
 
 ## Usage Guide
 
-The node has the following inputs:
+The generation node has the following inputs:
 
 - prompt - Your text prompt
+- model_loading_configuration - The output of the model configuration node
 
 The node has the following parameters:
 
@@ -42,16 +41,31 @@ The node has the following parameters:
 - height - Image height
 - steps - Number of steps. The recommended value is 50.
 - guidance_scale - CFG. The recommended value is 7.5.
-- attn_implementation - Valid values are `sdpa` and `flash_attention_2`
-- moe_impl - Valid values are `eager` and `flashinfer`
-- weights_folder - The path to the model's weights on disk.
-- use_offload - Whether to use CPU / disk offload.
-- disk_offload_layers - The number of layers (out of 32) to offload to disk, rather than hold in memory.
 - keep_model_in_memory - If enabled, the model will be kept in memory between generations, instead of being unloaded.
-- device_map_overrides - You can modify the custom device_map using this. Overrides are expressed as key=value pairs, comma-separated. See the [Performance Tuning](#performance-tuning) section for more details.
-- moe_drop_tokens - Enables the moe_drop_tokens parameter on model loading. See the [Memory Troubleshooting](#memory-troubleshooting) section for more details.
 
-Basic usage: Connect a String (Multiline) input to the `prompt` input, and connect the `Image` output to a Save Image node. An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
+The model configuration node has the following inputs:
+
+- weights_folder - The path to the model's weights on disk.
+- device map configuration - these parameters determine what the model will be loaded to (GPU, CPU, disk)
+    - use_offload - Whether to use CPU / disk offload.
+    - disk_offload_layers - The number of layers (out of 32) to offload to disk, rather than hold in memory.
+    - device_map_overrides - You can modify the custom device_map using this. Overrides are expressed as key=value pairs, comma-separated. See the [Performance Tuning](#performance-tuning) section for more details.
+- model loading keyword args - These are various parameters that are passed when loading the model
+    - attn_implementation - Valid values are `sdpa` and `flash_attention_2`
+    - moe_impl - Valid values are `eager` and `flashinfer`
+    - torch_dtype - This should usually be set to `auto`
+    - trust_remote_code - This is required to be set to True for this model
+    - moe_drop_tokens - Enables the moe_drop_tokens parameter on model loading. See the [Memory Troubleshooting](#memory-troubleshooting) section for more details.
+- quantization configuration - these are arguments passed to BitsAndBytes. If load_in_8_bit or load_in_4_bit are True, quantization will be used.
+    - load_in_8_bit
+    - load_in_4_bit
+    - bnb_4bit_use_double_quant
+    - bnb_4bit_compute_dtype
+    - bnb_4bit_quant_type
+    - llm_int8_skip_modules
+    - llm_int8_enable_fp32_cpu_offload
+
+Basic usage: Connect a String (Multiline) input to the `prompt` input, connect the model configuration node to the model_loading_configuration input, and connect the `Image` output to a Save Image node. An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
 ![example workflow](assets/workflow_screenshot.png)
 
 ## Recommended Usage
