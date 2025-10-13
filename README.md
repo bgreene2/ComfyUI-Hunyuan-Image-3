@@ -111,3 +111,16 @@ If you don't wish to do this, or if you are still running out of memory, you cou
 
 This is where the option is found in the Nvidia control panel:
 ![CUDA Sysmem Fallback](assets/cuda_sysmem_fallback_screenshot.png)
+
+## Contributing
+
+We welcome your contributions. You can:
+
+- Make a Pull Request
+    - Improvements? Fixes? New features? Let's get your creation merged.
+- Post an issue
+    - You can add a new issue on the [issues tab](https://github.com/bgreene2/ComfyUI-Hunyuan-Image-3/issues)
+- Participate in discussions
+    - You can chat with others in the [discussions tab](https://github.com/bgreene2/ComfyUI-Hunyuan-Image-3/discussions)
+- Make a new Hunyuan Image 3.0 ComfyUI node or fork this repo
+    - If your version is sufficiently maintained, I will archive this repo and link to yours.
