@@ -62,7 +62,7 @@ The model configuration node has the following inputs:
     - bnb_4bit_use_double_quant
     - bnb_4bit_compute_dtype
     - bnb_4bit_quant_type
-    - llm_int8_skip_modules
+    - llm_int8_skip_modules - These modules will be kept at full precision. For example, you could enter `vae,vision_model,vision_aligner,timestep_emb,patch_embed,time_embed,final_layer,time_embed_2,model.wte,model.ln_f,lm_head`.
     - llm_int8_enable_fp32_cpu_offload
 
 Basic usage: Connect a String (Multiline) input to the `prompt` input, connect the model configuration node to the model_loading_configuration input, and connect the `Image` output to a Save Image node. An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
@@ -89,8 +89,12 @@ Tips:
 If you wish to use more of your VRAM, you can set device_map_overrides.
 
 - To put everything except for the model's layers onto GPU 0, you would set `vision_model=0,vision_aligner=0,timestamp_emb=0,patch_embed=0,time_embed=0,final_layer=0,time_embed_2=0,model.wte=0,model.ln_f=0,lm_head=0`.
-- To start putting layers onto GPU0, you would add `model.layers.0=0,model.layers.1=0`,...
+- To put the first 8 layers onto GPU0, you would add `model.layers.0=0,model.layers.1=0,model.layers.2=0,model.layers.3=0,model.layers.4=0,model.layers.5=0,model.layers.6=0,model.layers.7=0`
 - You can also spread the load across GPUs, e.g. `model.layers.2=1,model.layers.3=1` would put layers 2 and 3 onto GPU 1.
+
+## Quantization
+
+To enable quantization, select either load_in_8bit or load_in_4bit. You may have to play around with the settings. See the [discussions page](https://github.com/bgreene2/ComfyUI-Hunyuan-Image-3/discussions) where the community shares tips.
 
 ## Memory Troubleshooting
 
