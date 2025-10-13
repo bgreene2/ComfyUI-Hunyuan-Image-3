@@ -123,8 +123,8 @@ class HunyuanImage3ModelLoadingConfig:
                 "trust_remote_code": ("BOOLEAN", {"default": True, "tooltip": "Must be set to True."}),
                 "moe_drop_tokens": ("BOOLEAN", {"default": True, "tooltip": "Sets moe_drop_tokens=True on model loading."}),
 
-                "load_in_8_bit": ("BOOLEAN", {"default": False, "tooltip": "A BitsAndBytes parameter."}),
-                "load_in_4_bit": ("BOOLEAN", {"default": False, "tooltip": "A BitsAndBytes parameter."}),
+                "load_in_8bit": ("BOOLEAN", {"default": False, "tooltip": "A BitsAndBytes parameter."}),
+                "load_in_4bit": ("BOOLEAN", {"default": False, "tooltip": "A BitsAndBytes parameter."}),
                 "bnb_4bit_use_double_quant": ("BOOLEAN", {"default": False, "tooltip": "A BitsAndBytes parameter."}),
                 "bnb_4bit_compute_dtype": ("STRING", {"multiline": False, "default": "float16", "tooltip": "A BitsAndBytes parameter. Omit the \"torch\", e.g. for \"torch.float16\", just enter \"float16\"."}),
                 "bnb_4bit_quant_type": ("STRING", {"multiline": False, "default": "nf4", "tooltip": "A BitsAndBytes parameter."}),
@@ -154,8 +154,8 @@ class HunyuanImage3ModelLoadingConfig:
         trust_remote_code: bool,
         moe_drop_tokens: bool,
 
-        load_in_8_bit: bool,
-        load_in_4_bit: bool,
+        load_in_8bit: bool,
+        load_in_4bit: bool,
         bnb_4bit_use_double_quant: bool,
         bnb_4bit_compute_dtype: str,
         bnb_4bit_quant_type: str,
@@ -212,10 +212,10 @@ class HunyuanImage3ModelLoadingConfig:
         model_config['model_kwargs'] = model_kwargs
 
         # make bitsandbytes config
-        if load_in_8_bit or load_in_4_bit:
+        if load_in_8bit or load_in_4bit:
             bits_and_bytes_config = dict(
-                    load_in_8_bit=load_in_8_bit,
-                    load_in_4_bit=load_in_4_bit,
+                    load_in_8bit=load_in_8bit,
+                    load_in_4bit=load_in_4bit,
                     bnb_4bit_use_double_quant=bnb_4bit_use_double_quant,
                     llm_int8_enable_fp32_cpu_offload=llm_int8_enable_fp32_cpu_offload,
             )
@@ -231,7 +231,7 @@ class HunyuanImage3ModelLoadingConfig:
 
         # build a string that will change if the configuration is changed
         # TODO: this is used to tell the generation node whether it needs to reload the model. There is probably a built-in ComfyUI way for a node to know if its input has changed, and we should use that instead.
-        hash_string = f"{weights_folder}-{load_in_8_bit}-{load_in_4_bit}-{bnb_4bit_use_double_quant}-{bnb_4bit_compute_dtype}-{bnb_4bit_quant_type}-{llm_int8_skip_modules}-{llm_int8_enable_fp32_cpu_offload}-{attn_implementation}-{moe_impl}-{torch_dtype}-{trust_remote_code}-{use_offload}-{disk_offload_layers}-{device_map_overrides}-{moe_drop_tokens}"
+        hash_string = f"{weights_folder}-{load_in_8bit}-{load_in_4bit}-{bnb_4bit_use_double_quant}-{bnb_4bit_compute_dtype}-{bnb_4bit_quant_type}-{llm_int8_skip_modules}-{llm_int8_enable_fp32_cpu_offload}-{attn_implementation}-{moe_impl}-{torch_dtype}-{trust_remote_code}-{use_offload}-{disk_offload_layers}-{device_map_overrides}-{moe_drop_tokens}"
 
         model_config['hash_string'] = hash_string
 

@@ -56,9 +56,9 @@ The model configuration node has the following inputs:
     - torch_dtype - This should usually be set to `auto`
     - trust_remote_code - This is required to be set to True for this model
     - moe_drop_tokens - Enables the moe_drop_tokens parameter on model loading. See the [Memory Troubleshooting](#memory-troubleshooting) section for more details.
-- quantization configuration - these are arguments passed to BitsAndBytes. If load_in_8_bit or load_in_4_bit are True, quantization will be used.
-    - load_in_8_bit
-    - load_in_4_bit
+- quantization configuration - these are arguments passed to BitsAndBytes. If load_in_8bit or load_in_4bit are True, quantization will be used.
+    - load_in_8bit
+    - load_in_4bit
     - bnb_4bit_use_double_quant
     - bnb_4bit_compute_dtype
     - bnb_4bit_quant_type
