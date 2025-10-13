@@ -78,6 +78,10 @@ If you wish to use more of your VRAM, you can set device_map_overrides.
 - To start putting layers onto GPU0, you would add `model.layers.0=0,model.layers.1=0`,...
 - You can also spread the load across GPUs, e.g. `model.layers.2=1,model.layers.3=1` would put layers 2 and 3 onto GPU 1.
 
+## Quantization
+
+For experimental quantization support, use the [quantization branch](https://github.com/bgreene2/ComfyUI-Hunyuan-Image-3/tree/quantization).
+
 ## Memory Troubleshooting
 
 If you are getting crashes due to running out of GPU memory, there are some things you could try:
@@ -93,3 +97,16 @@ If you don't wish to do this, or if you are still running out of memory, you cou
 
 This is where the option is found in the Nvidia control panel:
 ![CUDA Sysmem Fallback](assets/cuda_sysmem_fallback_screenshot.png)
+
+## Contributing
+
+We welcome your contributions. You can:
+
+- Make a Pull Request
+    - Improvements? Fixes? New features? Let's get your creation merged.
+- Post an issue
+    - You can add a new issue on the [issues tab](https://github.com/bgreene2/ComfyUI-Hunyuan-Image-3/issues)
+- Participate in discussions
+    - You can chat with others in the [discussions tab](https://github.com/bgreene2/ComfyUI-Hunyuan-Image-3/discussions)
+- Make a new Hunyuan Image 3.0 ComfyUI node or fork this repo
+    - If your version is sufficiently maintained, I will archive this repo and link to yours.
