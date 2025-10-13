@@ -5,6 +5,7 @@ diffusers>=0.32.0
 safetensors>=0.4.5
 tokenizers>=0.21.0
 transformers[accelerate,tiktoken]>=4.56.0
+bitsandbytes>=0.48.1
 
 # PyTorch with CUDA 12.8 support (install separately)
 # torch==2.7.1
