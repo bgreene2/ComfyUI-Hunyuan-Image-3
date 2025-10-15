@@ -3,6 +3,14 @@ import gc
 import torch
 from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 
+# qint4
+import json
+from safetensors.torch import load_file
+from optimum.quanto import requantize, quantize, qint4
+from hunyuan_image_3.hunyuan import HunyuanImage3ForCausalMM
+from transformers import AutoConfig, QuantoConfig
+from transformers.generation.utils import GenerationConfig
+
 class HunyuanImage3:
     """ComfyUI node for generating images with Hunyuan Image 3.0"""
     
@@ -88,6 +96,11 @@ class HunyuanImage3:
         return (image,)
 
     def _load_model(self, model_loading_config):
+        if model_loading_config['use_qint4_method_1']:
+            return self.__load_quantized_hi3_m1(model_loading_config['model_id'])
+        elif model_loading_config['use_qint4_method_2']:
+            return self.__load_quantized_hi3_m2(model_loading_config['model_id'])
+
         model_kwargs = model_loading_config['model_kwargs']
 
         if 'bits_and_bytes_config' in model_loading_config:
@@ -100,6 +113,50 @@ class HunyuanImage3:
         model.load_tokenizer(model_loading_config['model_id'])
 
         return model
+
+    def _load_quantized_hi3_m1(self, model_path):
+        self._log(f"Loading model architecture from {model_path} to CPU...")
+        Qmodel = HunyuanImage3ForCausalMM.from_pretrained(
+            model_path,
+            dtype=torch.bfloat16,
+            device_map=None,
+            attn_implementation="sdpa",
+            moe_impl="eager",
+            moe_drop_tokens=True,
+            trust_remote_code=True,
+            low_cpu_mem_usage=False,
+        )
+
+        self._log("Applying int4 quantization structure...")
+        quantize(Qmodel, weights=qint4)
+
+        self._log("Loading quantized weights...")
+        state_dict = load_file(f"{model_path}/model.safetensors")
+        Qmodel.load_state_dict(state_dict, strict=False, assign=True)
+
+        self._log("Moving quantized model to GPU...")
+        Qmodel = Qmodel.to("cuda")
+
+        return Qmodel
+
+    def _load_quantized_hi3_m2(self, model_path):
+        config = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
+
+        state_dict = load_file(f"{model_path}/model.safetensors")
+        with open(f"{model_path}/quantization_map.json", "r") as f: quantization_map = json.load(f)
+
+        self._log("Create Meta model and Loading quantized weights to CPU...")
+        with torch.device('meta'): Qmodel = HunyuanImage3ForCausalMM(config)
+        Qmodel = Qmodel.to(torch.bfloat16)
+        requantize(Qmodel, state_dict, quantization_map, device=torch.device('cpu'))
+
+        generation_config = GenerationConfig.from_pretrained(model_path)
+        Qmodel.generation_config = generation_config
+
+        self._log("Moving quantized model to GPU...")
+        Qmodel = Qmodel.to(torch.device('cuda'))
+
+        return Qmodel
 
     def _log(self, string):
         print(f"HunyuanImage3: {string}")
@@ -130,6 +187,9 @@ class HunyuanImage3ModelLoadingConfig:
                 "bnb_4bit_quant_type": ("STRING", {"multiline": False, "default": "nf4", "tooltip": "A BitsAndBytes parameter."}),
                 "llm_int8_skip_modules": ("STRING", {"multiline": False, "default": "", "tooltip": "A BitsAndBytes parameter."}),
                 "llm_int8_enable_fp32_cpu_offload": ("BOOLEAN", {"default": False, "tooltip": "A BitsAndBytes parameter."}),
+
+                "use_qint4_method_1": ("BOOLEAN", {"default": False, "tooltip": "Use method 1 (160GB CPU, 60GB GPU). Requires the weights from here: https://huggingface.co/wikeeyang/Hunyuan-Image-30-Qint4. This takes precedence over other parameters."}),
+                "use_qint4_method_2": ("BOOLEAN", {"default": False, "tooltip": "Use method 2 (75GB CPU, 60GB GPU). Requires the weights from here: https://huggingface.co/wikeeyang/Hunyuan-Image-30-Qint4. This takes precedence over other parameters."}),
             }
         }
     
@@ -161,6 +221,9 @@ class HunyuanImage3ModelLoadingConfig:
         bnb_4bit_quant_type: str,
         llm_int8_skip_modules: str,
         llm_int8_enable_fp32_cpu_offload: bool,
+
+        use_qint4_method_1: bool,
+        use_qint4_method_2: bool,
     ):
         """ Return configuration """
         model_config = dict(
@@ -229,9 +292,13 @@ class HunyuanImage3ModelLoadingConfig:
 
             model_config["bits_and_bytes_config"] = bits_and_bytes_config
 
+        # TODO: handle qint4 more elegantly if this is going to be merged
+        model_config['use_qint4_method_1'] = use_qint4_method_1
+        model_config['use_qint4_method_2'] = use_qint4_method_2
+
         # build a string that will change if the configuration is changed
         # TODO: this is used to tell the generation node whether it needs to reload the model. There is probably a built-in ComfyUI way for a node to know if its input has changed, and we should use that instead.
-        hash_string = f"{weights_folder}-{load_in_8bit}-{load_in_4bit}-{bnb_4bit_use_double_quant}-{bnb_4bit_compute_dtype}-{bnb_4bit_quant_type}-{llm_int8_skip_modules}-{llm_int8_enable_fp32_cpu_offload}-{attn_implementation}-{moe_impl}-{torch_dtype}-{trust_remote_code}-{use_offload}-{disk_offload_layers}-{device_map_overrides}-{moe_drop_tokens}"
+        hash_string = f"{weights_folder}-{load_in_8bit}-{load_in_4bit}-{bnb_4bit_use_double_quant}-{bnb_4bit_compute_dtype}-{bnb_4bit_quant_type}-{llm_int8_skip_modules}-{llm_int8_enable_fp32_cpu_offload}-{attn_implementation}-{moe_impl}-{torch_dtype}-{trust_remote_code}-{use_offload}-{disk_offload_layers}-{device_map_overrides}-{moe_drop_tokens}-{use_qint4_method_1}-{use_qint4_method_2}"
 
         model_config['hash_string'] = hash_string
 
