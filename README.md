@@ -65,6 +65,10 @@ The model configuration node has the following inputs:
     - llm_int8_skip_modules - These modules will be kept at full precision. For example, you could enter `vae,vision_model,vision_aligner,timestep_emb,patch_embed,time_embed,final_layer,time_embed_2,model.wte,model.ln_f,lm_head`.
     - llm_int8_enable_fp32_cpu_offload
 
+- qint4 configuration - These arguments control the model loading behavior when using qint4. That's [these weights](https://huggingface.co/wikeeyang/Hunyuan-Image-30-Qint4).
+    - use_qint4_method_1 - Uses method 1 of loading the qint4 weights, described on the huggingface page. Requires 160GB CPU and 60GB GPU memory. Loading may take a long time.
+    - use_qint4_method_2 - Uses method 2 of loading the qint4 weights, described on the huggingface page. Requires 75GB CPU and 60GB GPU memory. Loading may take a long time.
+
 Basic usage: Connect a String (Multiline) input to the `prompt` input, connect the model configuration node to the model_loading_configuration input, and connect the `Image` output to a Save Image node. An [example workflow](workflows/hunyuan_image_3_example.json) is provided.
 ![example workflow](assets/workflow_screenshot.png)
 

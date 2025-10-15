@@ -17,3 +17,5 @@ bitsandbytes>=0.48.1
 # flash-attn==2.8.3 --no-build-isolation
 # flashinfer-python
 
+# TODO: make sure these are all the additional qint4 requirements
+optimum-quanto>=0.2.7
